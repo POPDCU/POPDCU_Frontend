@@ -62,29 +62,32 @@ export default {
     };
   },
   mounted() {
-    // 초기 데이터 로드
     this.fetchColleges();
   },
   methods: {
+    // 랭킹보기 토글
     toggleLeaderboard() {
       this.leaderboardVisible = !this.leaderboardVisible;
       if (this.leaderboardVisible) {
         this.fetchColleges();
       }
     },
+    // 단과대학 랭킹 로드
     async fetchColleges() {
       try {
         this.loading = true;
         this.colleges = await getCollegeList();
       } catch (error) {
-        console.error('Error fetching college rankings:', error);
+        console.error('Error:', error);
       } finally {
         this.loading = false;
       }
     },
+    // 랭킹 새로고침
     refreshLeaderboard() {
       this.fetchColleges();
     },
+    // 숫자 포맷팅
     formatNumber(number) {
       return new Intl.NumberFormat().format(number);
     }

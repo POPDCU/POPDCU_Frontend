@@ -49,32 +49,26 @@ export default {
       serverSyncInterval: null,
       clickCountBeforeSync: 0,
       isSyncing: false,
-      clickStreak: 0, // POPCAT처럼 연속 클릭 시 보너스 포인트
+      clickStreak: 0, // 연속 클릭 보너스
       lastClickTime: 0, // 마지막 클릭 시간
     };
   },
   created() {
     this.audio = new Audio(require('@/assets/sound/jumping_sound2.mp3'));
-
-    // 화면 너비에 따라 이미지 높이를 조정
     window.addEventListener('resize', this.adjustImageSize);
     this.adjustImageSize();
     
     if ('ontouchstart' in window) {
-      // 모바일 환경일 경우에만 터치 이벤트 리스너 등록
       window.addEventListener('touchstart', this.handleTouchStart);
       window.addEventListener('touchend', this.handleTouchEnd);
     } else {
-      // 모바일이 아닌 환경에서는 마우스 이벤트 리스너 등록
       window.addEventListener('mousedown', this.handleMouseDown);
       window.addEventListener('mouseup', this.handleMouseUp);
     }
     
-    // 키보드 이벤트 리스너 등록
     window.addEventListener('keydown', this.handleKeyDown);
     window.addEventListener('keyup', this.handleKeyUp);
     
-    // 서버와 주기적으로 동기화 (10초마다)
     this.serverSyncInterval = setInterval(this.syncWithServer, 10000);
   },
   beforeUnmount() {
@@ -91,17 +85,14 @@ export default {
     window.removeEventListener('keydown', this.handleKeyDown);
     window.removeEventListener('keyup', this.handleKeyUp);
     
-    // 서버 동기화 인터벌 정리
     if (this.serverSyncInterval) {
       clearInterval(this.serverSyncInterval);
     }
     
-    // 페이지 나가기 전에 마지막으로 서버와 동기화
     this.syncWithServer();
   },
   methods: {
     adjustImageSize() {
-      // 화면 너비에 따라 이미지 높이를 동적으로 조정
       if (window.innerWidth < 768) {
         this.imageHeight = '300px';
       } else {
@@ -136,17 +127,14 @@ export default {
       this.$store.commit('setKeyPressed', false);
     },
     handleInteraction() {
-      // 클릭 상태 업데이트
       this.$store.commit('setMouseClicked', true);
       
-      // 현재 시간 기록
       const now = Date.now();
       
-      // 연속 클릭 처리
-      if (now - this.lastClickTime < 800) { // 0.8초 이내 클릭은 연속 클릭으로 간주
+      if (now - this.lastClickTime < 800) {
         this.clickStreak++;
-        if (this.clickStreak > 10) { // 연속 클릭 10번 이상이면 보너스 포인트
-          this.incrementClickCounter(2); // 보너스 포인트
+        if (this.clickStreak > 10) {
+          this.incrementClickCounter(2);
         } else {
           this.incrementClickCounter(1);
         }
@@ -157,13 +145,10 @@ export default {
       
       this.lastClickTime = now;
       this.playSound();
-      
-      // 연속 클릭 방지를 위한 쿨다운 (50ms)
       this.setClickCooldown();
     },
     playSound() {
       if (this.audio) {
-        // 소리가 아직 재생 중이면 처음부터 다시 재생
         this.audio.currentTime = 0;
         this.audio.play();
       }
@@ -172,34 +157,27 @@ export default {
       this.clickCooldown = true;
       setTimeout(() => {
         this.clickCooldown = false;
-      }, 50); // 짧은 쿨다운으로 설정
+      }, 50);
     },
     incrementClickCounter(amount = 1) {
       this.currentClicks += amount;
       this.clickCountBeforeSync += amount;
       
-      // 로컬 상태 업데이트
       for (let i = 0; i < amount; i++) {
         this.$store.commit('incrementClickedOrKeyedCount');
       }
     },
     async syncWithServer() {
-      // 서버와 동기화할 클릭 수가 없으면 리턴
       if (this.clickCountBeforeSync === 0 || this.isSyncing) return;
       
-      // 동기화할 클릭 수 보관
       const clicksToSync = this.clickCountBeforeSync;
       
       try {
         this.isSyncing = true;
-        this.clickCountBeforeSync = 0; // 동기화 전에 카운트 초기화
-        
-        // 서버로 클릭 수 전송
+        this.clickCountBeforeSync = 0;
         await updateClickCount(this.college, clicksToSync);
-        console.log(`${clicksToSync} clicks synced with server`);
       } catch (error) {
-        console.error('Error syncing clicks with server:', error);
-        // 동기화 실패 시 카운트 복구
+        console.error('Error:', error);
         this.clickCountBeforeSync += clicksToSync;
       } finally {
         this.isSyncing = false;

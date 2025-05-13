@@ -55,11 +55,10 @@
           <div class="mt-2">단과대학 목록을 불러오는 중...</div>
         </div>
         
-        <div v-else-if="colleges.length === 0" class="text-center my-5">
+      <div v-else-if="colleges.length === 0" class="text-center my-5">
           <v-icon large color="grey lighten-1">mdi-school</v-icon>
           <div class="mt-2 text-body-1 grey--text">단과대학 정보가 없습니다</div>
           
-          <!-- 개발 모드일 때만 테스트 데이터 추가 버튼 표시 -->
           <v-btn 
             color="secondary" 
             class="mt-4" 
@@ -203,10 +202,9 @@ export default {
     };
   },
   created() {
-    // 컴포넌트 생성 시 바로 데이터 로드
     this.fetchColleges();
     
-    // 주기적으로 데이터 새로고침 (60초마다)
+    // 60초마다 데이터 새로고침
     this.refreshInterval = setInterval(() => {
       if (this.$route.path === '/admin/dashboard') {
         this.fetchColleges();
@@ -215,37 +213,36 @@ export default {
   },
   
   beforeUnmount() {
-    // 컴포넌트 해제 시 인터벌 정리
     if (this.refreshInterval) {
       clearInterval(this.refreshInterval);
     }
   },
   methods: {
+    // 단과대학 목록 불러오기
     async fetchColleges() {
       try {
         this.loading.fetch = true;
         const response = await getCollegeList();
-        console.log('API response in component:', response);
         
         if (Array.isArray(response)) {
           this.colleges = response;
-          console.log('Colleges array:', this.colleges);
         } else {
-          console.warn('Response is not an array:', response);
           this.colleges = [];
         }
       } catch (error) {
-        console.error('Error fetching colleges:', error);
-        this.showSnackbar('단과대학 목록을 불러오는데 실패했습니다.', 'error');
+        console.error('Error:', error);
+        this.showSnackbar('단과대학 목록 로드 실패', 'error');
         this.colleges = [];
       } finally {
         this.loading.fetch = false;
       }
     },
+    // 데이터 새로고침
     refreshColleges() {
       this.fetchColleges();
-      this.showSnackbar('데이터가 새로고침되었습니다.', 'info');
+      this.showSnackbar('데이터 새로고침 완료', 'info');
     },
+    // 단과대학 추가
     async addCollege() {
       if (!this.$refs.addForm.validate()) return;
       
@@ -253,24 +250,25 @@ export default {
         this.loading.add = true;
         await createCollege(this.newCollege.name, this.newCollege.count);
         
-        this.showSnackbar('단과대학이 추가되었습니다.', 'success');
+        this.showSnackbar('단과대학 추가 완료', 'success');
         await this.fetchColleges();
         
-        // 입력 폼 초기화
         this.newCollege.name = '';
         this.newCollege.count = 0;
         this.$refs.addForm.reset();
       } catch (error) {
-        console.error('Error adding college:', error);
-        this.showSnackbar('단과대학 추가에 실패했습니다.', 'error');
+        console.error('Error:', error);
+        this.showSnackbar('단과대학 추가 실패', 'error');
       } finally {
         this.loading.add = false;
       }
     },
+    // 수정 다이얼로그 열기
     openEditDialog(item) {
-      this.editedItem = JSON.parse(JSON.stringify(item)); // 깊은 복사
+      this.editedItem = JSON.parse(JSON.stringify(item));
       this.editDialog = true;
     },
+    // 수정 다이얼로그 닫기
     closeEditDialog() {
       this.editDialog = false;
       this.$nextTick(() => {
@@ -281,6 +279,7 @@ export default {
         };
       });
     },
+    // 단과대학 수정 저장
     async saveEdit() {
       if (!this.$refs.editForm.validate()) return;
       
@@ -292,57 +291,63 @@ export default {
           this.editedItem.countNumber
         );
         
-        this.showSnackbar('단과대학 정보가 수정되었습니다.', 'success');
+        this.showSnackbar('단과대학 수정 완료', 'success');
         await this.fetchColleges();
         this.closeEditDialog();
       } catch (error) {
-        console.error('Error updating college:', error);
-        this.showSnackbar('단과대학 수정에 실패했습니다.', 'error');
+        console.error('Error:', error);
+        this.showSnackbar('단과대학 수정 실패', 'error');
       } finally {
         this.loading.edit = false;
       }
     },
+    // 삭제 확인 다이얼로그 열기
     confirmDelete(item) {
       this.deleteItem = item;
       this.deleteDialog = true;
     },
+    // 삭제 확인 다이얼로그 닫기
     closeDeleteDialog() {
       this.deleteDialog = false;
       this.$nextTick(() => {
         this.deleteItem = {};
       });
     },
+    // 단과대학 삭제 실행
     async confirmDeleteCollege() {
       try {
         this.loading.delete = true;
         await deleteCollege(this.deleteItem.id);
         
-        this.showSnackbar('단과대학이 삭제되었습니다.', 'success');
+        this.showSnackbar('단과대학 삭제 완료', 'success');
         await this.fetchColleges();
         this.closeDeleteDialog();
       } catch (error) {
-        console.error('Error deleting college:', error);
-        this.showSnackbar('단과대학 삭제에 실패했습니다.', 'error');
+        console.error('Error:', error);
+        this.showSnackbar('단과대학 삭제 실패', 'error');
       } finally {
         this.loading.delete = false;
       }
     },
+    // 알림 표시
     showSnackbar(text, color) {
       this.snackbar.text = text;
       this.snackbar.color = color;
       this.snackbar.show = true;
     },
+    // 메인으로 이동
     goToMain() {
       this.$router.push('/');
     },
+    // 로그아웃
     logout() {
       localStorage.removeItem('adminToken');
       localStorage.removeItem('adminUsername');
       this.$router.push('/admin');
-      this.showSnackbar('로그아웃되었습니다.', 'info');
+      this.showSnackbar('로그아웃 완료', 'info');
     },
+    // 테스트 데이터 추가
     addTestData() {
-      // 테스트 데이터 추가 (디버깅용)
       this.colleges = [
         { id: 1, collegeName: '공과대학', countNumber: 1000 },
         { id: 2, collegeName: '인문대학', countNumber: 800 },
@@ -350,7 +355,7 @@ export default {
         { id: 4, collegeName: '사회과학대학', countNumber: 950 },
         { id: 5, collegeName: '자연과학대학', countNumber: 1100 }
       ];
-      this.showSnackbar('테스트 데이터가 추가되었습니다. (본 데이터는 실제 서버에 저장되지 않음)', 'info');
+      this.showSnackbar('테스트 데이터 추가 완료', 'info');
     }
   }
 };

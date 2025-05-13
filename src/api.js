@@ -2,21 +2,20 @@ import axios from 'axios';
 
 const apiUrl = 'http://localhost:8080/api';
 
-// 인증 토큰을 헤더에 추가하는 함수
+// 토큰 헤더 설정
 const getAuthHeaders = () => {
   const token = localStorage.getItem('adminToken');
   return token ? { 'Authorization': `Bearer ${token}` } : {};
 };
 
+// 단과대학 목록 조회
 export const getCollegeList = async () => {
   try {
-    console.log('Calling API:', `${apiUrl}/ranking`);
     const response = await axios.get(`${apiUrl}/ranking`);
-    console.log('API response:', response);
     return response.data || [];
   } catch (error) {
-    console.error('Error fetching ranking data:', error);
-    return []; // 에러 발생 시 빈 배열 반환
+    console.error('Error:', error);
+    return [];
   }
 };
 
@@ -26,7 +25,7 @@ export const adminLogin = async (username, password) => {
     const response = await axios.post(`${apiUrl}/admin/login`, { username, password });
     return response.data;
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Error:', error);
     throw error;
   }
 };
@@ -41,7 +40,7 @@ export const createCollege = async (collegeName, countNumber) => {
     );
     return response.data;
   } catch (error) {
-    console.error('Error creating college:', error);
+    console.error('Error:', error);
     throw error;
   }
 };
@@ -56,7 +55,7 @@ export const updateCollege = async (id, collegeName, countNumber) => {
     );
     return response.data;
   } catch (error) {
-    console.error('Error updating college:', error);
+    console.error('Error:', error);
     throw error;
   }
 };
@@ -68,18 +67,18 @@ export const deleteCollege = async (id) => {
     const response = await axios.delete(`${apiUrl}/admin/colleges/${id}`, { headers });
     return response.data;
   } catch (error) {
-    console.error('Error deleting college:', error);
+    console.error('Error:', error);
     throw error;
   }
 };
 
-// 클릭 카운트 증가
+// 클릭 카운트 업데이트
 export const updateClickCount = async (collegeName, count) => {
   try {
     const response = await axios.patch(`${apiUrl}/count/name/${collegeName}/${count}`);
     return response.data;
   } catch (error) {
-    console.error('Error updating click count:', error);
+    console.error('Error:', error);
     throw error;
   }
 };

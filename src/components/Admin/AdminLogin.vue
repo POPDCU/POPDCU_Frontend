@@ -60,6 +60,7 @@ export default {
     };
   },
   methods: {
+    // 로그인 처리
     async login() {
       if (!this.$refs.form.validate()) return;
       
@@ -67,20 +68,14 @@ export default {
         this.loading = true;
         this.errorMessage = '';
         
-        // 관리자 로그인 시도
         const response = await adminLogin(this.username, this.password);
         
-        // 성공적으로 토큰을 받았는지 확인
         if (response && response.token) {
-          // 토큰과 사용자 정보 저장
           localStorage.setItem('adminToken', response.token);
           localStorage.setItem('adminUsername', response.username);
-          
-          // 대시보드로 이동
           this.$router.push('/admin/dashboard');
         } else {
-          // 토큰이 없는 경우 오류 표시
-          this.errorMessage = '로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요.';
+          this.errorMessage = '로그인 실패. 아이디와 비밀번호를 확인해주세요.';
         }
       } catch (error) {
         if (error.response && error.response.status === 401) {
@@ -92,6 +87,7 @@ export default {
         this.loading = false;
       }
     },
+    // 메인으로 이동
     goToMain() {
       this.$router.push('/');
     }
