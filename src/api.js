@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const apiUrl = 'http://localhost:8080/api';
+// 기본 API 주소를 환경 변수에서 가져오고, 없으면 현재 도메인 기준으로 동작하도록 수정
+// 이렇게 하면 로컬 개발 환경과 배포 환경 모두에서 별도 수정 없이 동작합니다.
+const apiUrl = process.env.VUE_APP_API_URL || '/api';
 
 // 토큰 헤더 설정
 const getAuthHeaders = () => {
